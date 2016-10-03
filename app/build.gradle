@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2016 Uli Bubenheimer. All rights reserved.
+ */
+
+apply plugin: 'com.android.application'
+
+//Keystore properties for automated release builds - not needed for debug builds
+def keystorePropertiesFile = file('file:///' + KEYSTORE_PROPERTIES_FILE)
+def keystoreProperties = new Properties()
+keystoreProperties.load(keystorePropertiesFile.isFile() ?
+        new InputStreamReader(new FileInputStream(KEYSTORE_PROPERTIES_FILE)) :
+        new StringReader('storeFile=dummystore'))
+android {
+    compileSdkVersion 24
+    buildToolsVersion '24.0.3'
+
+    defaultConfig {
+        applicationId 'com.bubenheimer.bizsearch'
+        minSdkVersion 16
+        targetSdkVersion 24
+        versionName '1.0'
+        versionCode 1
+        resConfigs 'en', 'en-rUS'
+        //Define google.api.key Gradle property in local.properties or gradle.properties
+        resValue 'string', 'google_api_key', BIZSEARCH_GOOGLE_API_KEY
+    }
+
+    signingConfigs {
+        config {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            signingConfig signingConfigs.config
+        }
+    }
+}
+
+dependencies {
+    String playServicesVersion = '9.6.1'
+    String supportLibVersion = '24.2.1'
+
+    compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    compile "com.android.support:design:${supportLibVersion}"
+    compile "com.android.support:support-annotations:${supportLibVersion}"
+    compile "com.android.support:support-compat:${supportLibVersion}"
+
+    compile "com.google.android.gms:play-services-location:${playServicesVersion}"
+    compile "com.google.android.gms:play-services-maps:${playServicesVersion}"
+
+    compile('com.google.http-client:google-http-client-android:1.22.0') {
+        exclude group: 'xpp3', module: 'xpp3'
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'junit', module: 'junit'
+        exclude group: 'com.google.android', module: 'android'
+    }
+}
