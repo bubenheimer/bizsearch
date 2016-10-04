@@ -4,8 +4,6 @@
 
 package com.bubenheimer.bizsearch.rest.model;
 
-import android.support.annotation.Keep;
-
 import com.google.api.client.util.Key;
 
 import java.util.List;
@@ -30,8 +28,4 @@ public final class PlacesMetaResult {
      */
     @Key
     public List<PlacesResult> results;
-
-    @Keep
-    public PlacesMetaResult() {
-    }
 }

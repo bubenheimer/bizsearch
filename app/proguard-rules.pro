@@ -28,10 +28,11 @@
 }
 
 #google-api-client
-# Needed by google-api-client to keep generic types and @Key annotations accessed via reflection
+# keep generic types, constructors, and @Key annotations accessed via reflection
 
 -keepclassmembers class * {
-  @com.google.api.client.util.Key <fields>;
+    @com.google.api.client.util.Key <fields>;
+    public <init>();
 }
 
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault

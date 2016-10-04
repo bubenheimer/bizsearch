@@ -4,8 +4,6 @@
 
 package com.bubenheimer.bizsearch.rest.model;
 
-import android.support.annotation.Keep;
-
 import com.google.api.client.util.Key;
 
 /**
@@ -16,8 +14,4 @@ public final class PlacesLocation {
     public Double lat;
     @Key
     public Double lng;
-
-    @Keep
-    public PlacesLocation() {
-    }
 }
