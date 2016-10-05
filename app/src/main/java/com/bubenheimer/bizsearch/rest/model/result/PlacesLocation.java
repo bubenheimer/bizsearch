@@ -2,7 +2,7 @@
  * Copyright (c) 2015-2016 Uli Bubenheimer. All rights reserved.
  */
 
-package com.bubenheimer.bizsearch.rest.model;
+package com.bubenheimer.bizsearch.rest.model.result;
 
 import com.google.api.client.util.Key;
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2015-2016 Uli Bubenheimer. All rights reserved.
  */
 
-package com.bubenheimer.bizsearch.rest.model;
+package com.bubenheimer.bizsearch.rest.model.result;
 
 import com.google.api.client.util.Key;
 
@@ -23,6 +23,12 @@ public final class PlacesMetaResult {
      */
     @Key
     public String status;
+    /**
+     * Optional error message if result status is not "OK".
+     * See https://developers.google.com/places/web-service/search for details.
+     */
+    @Key("error_message")
+    public String errorMessage;
     /**
      * List of found places
      */

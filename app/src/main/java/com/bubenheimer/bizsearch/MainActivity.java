@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
-import android.support.annotation.WorkerThread;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -45,6 +44,7 @@ import java.io.IOException;
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
 //TODO tests should be added, but this project is too much work for its purpose already
+//TODO Comply better with Places API Terms of Use & Privacy Policy: https://developers.google.com/places/web-service/policies
 /**
  * Displays a Google Map centered on the user's initial location. Queries for the closest florists
  * and displays locations on the map with info dialogs. Requeries as the user moves around.<p>
@@ -105,35 +105,19 @@ public final class MainActivity extends AppCompatActivity
 
     /** Handles query results */
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        /**
-         * LocalBroadcastReceiver does not receive on UI thread
-         *
-         * @param context
-         * @param intent
-         */
-        @WorkerThread
+        @UiThread
         @Override
         public void onReceive(final Context context, final Intent intent) {
             switch (intent.getAction()) {
                 case QueryManager.INTENT_ACTION_QUERY_SUCCESS:
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            placesResultCache = intent.getParcelableExtra(
-                                    QueryManager.INTENT_QUERY_SUCCESS_KEY_RESULT);
-                            processCachedResult();
-                        }
-                    });
+                    placesResultCache = intent.getParcelableExtra(
+                            QueryManager.INTENT_QUERY_SUCCESS_KEY_RESULT);
+                    processCachedResult();
                     break;
                 case QueryManager.INTENT_ACTION_QUERY_FAILURE:
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            final String message = intent.getStringExtra(
-                                    QueryManager.INTENT_QUERY_FAILURE_KEY_MSG);
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    final String message = intent.getStringExtra(
+                            QueryManager.INTENT_QUERY_FAILURE_KEY_MSG);
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
                     break;
             }
         }

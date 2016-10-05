@@ -2,7 +2,7 @@
  * Copyright (c) 2015-2016 Uli Bubenheimer. All rights reserved.
  */
 
-package com.bubenheimer.bizsearch.rest;
+package com.bubenheimer.bizsearch.rest.model;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.util.Key;
@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * Represents URL information
  */
-final class NearbySearchUrl extends GenericUrl {
+public final class NearbySearchUrl extends GenericUrl {
     /**
      * Base query URL
      */
@@ -51,24 +51,22 @@ final class NearbySearchUrl extends GenericUrl {
     /** Save longitude for later retrieval */
     private double longitude;
 
-    NearbySearchUrl() {
+    public NearbySearchUrl() {
         super(ENCODED_URL);
     }
 
-    /** Save latitude for later retrieval */
-    double getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    /** Save longitude for later retrieval */
-    double getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
     /**
      * Web API key for Places query
      */
-    NearbySearchUrl setApiKey(final String apiKey) {
+    public NearbySearchUrl setApiKey(final String apiKey) {
         this.apiKey = apiKey;
         return this;
     }

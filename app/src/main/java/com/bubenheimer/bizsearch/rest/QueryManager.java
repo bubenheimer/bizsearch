@@ -11,15 +11,18 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.bubenheimer.bizsearch.R;
-import com.bubenheimer.bizsearch.rest.model.PlacesGeometry;
-import com.bubenheimer.bizsearch.rest.model.PlacesLocation;
-import com.bubenheimer.bizsearch.rest.model.PlacesMetaResult;
-import com.bubenheimer.bizsearch.rest.model.PlacesResult;
+import com.bubenheimer.bizsearch.rest.model.NearbySearchUrl;
+import com.bubenheimer.bizsearch.rest.model.result.PlacesGeometry;
+import com.bubenheimer.bizsearch.rest.model.result.PlacesLocation;
+import com.bubenheimer.bizsearch.rest.model.result.PlacesMetaResult;
+import com.bubenheimer.bizsearch.rest.model.result.PlacesResult;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpStatusCodes;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.Data;
 
@@ -32,7 +35,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-//TODO The current approach limits search results to the 20 closest matches. It is possible to return more, but requires more work.
+//TODO The current approach limits search results to the 20 closest matches. It is possible to return more, but requires a little more work to issue queries for additional pages of results.
 
 /**
  *
@@ -93,7 +96,7 @@ public final class QueryManager {
     public QueryManager(final @NonNull Context context) {
         this.context = context.getApplicationContext();
 
-        final NetHttpTransport transport = new NetHttpTransport.Builder().build();
+        final HttpTransport transport = new NetHttpTransport.Builder().build();
         requestFactory = transport.createRequestFactory(new DefaultHttpRequestInitializer());
         nearbySearchUrl = new NearbySearchUrl()
                 .setApiKey(context.getString(R.string.google_api_key))
@@ -162,7 +165,17 @@ public final class QueryManager {
                 fail();
                 return;
             } catch (final ExecutionException e) {
-                Log.e(TAG, "Places search request threw exception: " + e.getCause().getMessage());
+                final Throwable cause = e.getCause();
+                if (cause instanceof HttpResponseException) {
+                    final HttpResponseException httpResponseException =
+                            (HttpResponseException) cause;
+                    Log.e(TAG, "Places search request returned HTTP error: "
+                            + httpResponseException.getStatusCode() + ' '
+                            + httpResponseException.getStatusMessage());
+                    Log.i(TAG, httpResponseException.getContent());
+                } else {
+                    Log.e(TAG, "Places search request threw exception: " + cause.toString());
+                }
                 fail();
                 return;
             }
@@ -182,8 +195,10 @@ public final class QueryManager {
                 final PlacesMetaResult result = httpResponse.parseAs(PlacesMetaResult.class);
                 //Check the status that is an element of the message. Distinct from HTTP status.
                 switch (result.status) {
-                    case "OK":
                     case "ZERO_RESULTS":
+                        handleOptionalErrorMessage(result);
+                        //fall through
+                    case "OK":
                         //Simplify the model class hierarchy for easy passing
                         final SimplePlacesResult simpleResult = simplifyResult(result);
                         if (simpleResult == null) {
@@ -207,6 +222,7 @@ public final class QueryManager {
                     default:
                         //Bad errors that we cannot handle
                         Log.e(TAG, "Bad Places search result status: " + result.status);
+                        handleOptionalErrorMessage(result);
                         fail();
                 }
             } catch (final IOException e) {
@@ -223,6 +239,13 @@ public final class QueryManager {
                     .putExtra(INTENT_QUERY_FAILURE_KEY_MSG,
                             context.getString(R.string.search_error));
             LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        }
+
+        private void handleOptionalErrorMessage(final @NonNull PlacesMetaResult metaResult) {
+            final String errorMessage = metaResult.errorMessage;
+            if (errorMessage != null && !Data.isNull(errorMessage)) {
+                Log.e(TAG, "Places search error: " + errorMessage);
+            }
         }
 
         /**
