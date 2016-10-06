@@ -31,8 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Do not recreate Activity on orientation change to avoid losing position
+             in ScrollView-->
+        <!-- todo part of the background is black temporarily on orientation change, how to fix? -->
         <activity
             android:name="com.bubenheimer.bizsearch.LegalActivity"
+            android:configChanges="orientation|screenSize"
             android:parentActivityName=".MainActivity"/>
     </application>
 </manifest>

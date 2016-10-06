@@ -2,24 +2,24 @@
 <!--
   ~ Copyright (c) 2016 Uli Bubenheimer. All rights reserved.
   -->
-<android.support.design.widget.CoordinatorLayout
+<!-- Do not use ScrollView - it is too slow in this case -->
+<!-- LinearLayout is more responsive than FrameLayout in this case for some reason -->
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".LegalActivity"
     >
-    <LinearLayout
+    <TextView
+        android:id="@+id/legal_text"
+        android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
-        <TextView
-            android:id="@android:id/message"
-            android:layout_height="0dp"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:scrollbars="horizontal|vertical"
-            android:textAppearance="?android:textAppearanceSmall"/>
-    </LinearLayout>
-</android.support.design.widget.CoordinatorLayout>
+        android:layout_weight="1"
+        android:gravity="center"
+        android:scrollbars="vertical"
+        android:textAppearance="?android:textAppearanceSmall"
+        android:text="Rendering legalese..."
+        />
+</LinearLayout>
