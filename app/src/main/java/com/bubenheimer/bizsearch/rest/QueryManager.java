@@ -83,8 +83,8 @@ public final class QueryManager {
     private final NearbySearchUrl nearbySearchUrl;
 
     /** A Future for the single currently pending or previous query, if any. Is set
-     * whenever a new query is scheduled. A Future allows background execution with easy
-     * cancellation.
+     * whenever a new query is scheduled. Google HTTP Client has built-in support for Futures,
+     * allowing background execution with easy cancellation.
      */
     private volatile Future<HttpResponse> httpResponseFuture;
 
@@ -127,7 +127,7 @@ public final class QueryManager {
         }
     }
 
-    //TODO would be nice to tie additional failures from the ResponseHandler into the exponential backoff pattern
+    //TODO would be nice to tie failures from the ResponseHandler into the exponential backoff pattern
     /**
      * ResponseHandler to be called right after each HttpResponse completes. Takes care of
      * parsing the resonse and broadcasting the relevant parts.

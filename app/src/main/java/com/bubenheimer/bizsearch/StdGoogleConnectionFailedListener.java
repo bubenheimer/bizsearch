@@ -23,13 +23,13 @@ abstract class StdGoogleConnectionFailedListener
 
     private final Context context;
 
-    StdGoogleConnectionFailedListener(final Context context) {
-        this.context = context;
+    StdGoogleConnectionFailedListener(final @NonNull Context context) {
+        this.context = context.getApplicationContext();
     }
 
     @UiThread
     @Override
-    public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
+    public void onConnectionFailed(final @NonNull ConnectionResult connectionResult) {
         if (connectionResult.getErrorCode() == ConnectionResult.CANCELED) {
             final String errorMsg =
                     "Google APIs connection error resolution cancelled: " + connectionResult;

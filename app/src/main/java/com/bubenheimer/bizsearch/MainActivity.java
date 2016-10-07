@@ -80,7 +80,6 @@ public final class MainActivity extends AppCompatActivity
     private GoogleApiClient googleApiClient;
 
     private GoogleApiClient.ConnectionCallbacks connectionCallbacks;
-    private GoogleApiClient.OnConnectionFailedListener connectionFailedHandler;
 
     private GoogleMap map;
 
@@ -124,7 +123,7 @@ public final class MainActivity extends AppCompatActivity
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //Initiate Marshmallow permissions check
@@ -139,8 +138,25 @@ public final class MainActivity extends AppCompatActivity
             }, PERMISSIONS_REQUEST);
         }
 
-        connectionCallbacks = new ConnectionCallbacksHandler(this);
-        connectionFailedHandler = new ConnectionFailedHandler(this);
+        connectionCallbacks = new AbstractGoogleConnectionCallbacks(this) {
+            @Override
+            public void onConnected(final Bundle bundle) {
+                requestLocationUpdates();
+            }
+        };
+
+        final GoogleApiClient.OnConnectionFailedListener connectionFailedHandler =
+                new StdGoogleConnectionFailedListener(this) {
+                    @Override
+                    @UiThread
+                    public void onConnectionFailed(
+                            final @NonNull ConnectionResult connectionResult) {
+                        //Just display an error and quit - the app is useless without a connection
+                        //and at this point we have already tried all available mitigations.
+                        super.onConnectionFailed(connectionResult);
+                        finish();
+                    }
+                };
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, connectionFailedHandler)
@@ -173,15 +189,8 @@ public final class MainActivity extends AppCompatActivity
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 
         queryManager.cancelLast();
-        queryManager = null;
 
         googleApiClient.unregisterConnectionCallbacks(connectionCallbacks);
-        googleApiClient = null;
-
-        connectionCallbacks = null;
-        connectionFailedHandler = null;
-
-        map = null;
 
         super.onDestroy();
     }
@@ -251,8 +260,8 @@ public final class MainActivity extends AppCompatActivity
 
     @Override
     public void onRequestPermissionsResult(final int requestCode,
-                                           @NonNull final String[] permissions,
-                                           @NonNull final int[] grantResults) {
+                                           final @NonNull String[] permissions,
+                                           final @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (permissionDenied(grantResults)) {
@@ -288,16 +297,26 @@ public final class MainActivity extends AppCompatActivity
         }
 
         // Code below could be executed more than once, ensure that won't cause problems
-
         final LocationRequest locationRequest = LocationRequest.create()
                 .setInterval(LOCATION_UPDATE_INTERVAL)
                 .setFastestInterval(LOCATION_UPDATE_FASTEST_INTERVAL)
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setSmallestDisplacement(LOCATION_UPDATE_SMALLEST_DISPLACEMENT);
         //noinspection MissingPermission - we checked permissions above
-        FusedLocationApi.requestLocationUpdates(googleApiClient,
-                locationRequest, MainActivity.this)
-                .setResultCallback(new LocationUpdateRequestResultCallback());
+        FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, MainActivity.this)
+                .setResultCallback(new StdResultCallback() {
+                    @Override
+                    public void onFailure(final @NonNull Status status) {
+                        super.onFailure(status);
+                        Toast.makeText(MainActivity.this, R.string.location_update_request_failed,
+                                Toast.LENGTH_SHORT).show();
+                        //TODO use location provider dialog
+                        //At this point we have already tried the available mitigations, so exit
+                        //instead of staying in a dead app shell. This would be a rare case.
+                        //(user has denied providing any location information)
+                        finish();
+                    }
+                });
     }
 
     /**
@@ -383,42 +402,6 @@ public final class MainActivity extends AppCompatActivity
                     .position(placesResultCache.locations.get(i))
                     .title(placesResultCache.names.get(i))
                     .snippet(placesResultCache.attributions));
-        }
-    }
-
-    private final class ConnectionCallbacksHandler extends AbstractGoogleConnectionCallbacks {
-        ConnectionCallbacksHandler(final Context context) {
-            super(context);
-        }
-
-        @Override
-        public void onConnected(final Bundle bundle) {
-            requestLocationUpdates();
-        }
-    }
-
-    private final class ConnectionFailedHandler extends StdGoogleConnectionFailedListener {
-        ConnectionFailedHandler(final Context context) {
-            super(context);
-        }
-
-        @Override
-        @UiThread
-        public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
-            super.onConnectionFailed(connectionResult);
-            finish();
-        }
-    }
-
-    private final class LocationUpdateRequestResultCallback extends StdResultCallback {
-        @Override
-        public void onFailure(@NonNull final Status status) {
-            super.onFailure(status);
-            Toast.makeText(
-                    MainActivity.this, R.string.location_update_request_failed, Toast.LENGTH_SHORT)
-                    .show();
-            //Error would seem irrecoverable, so exit
-            finish();
         }
     }
 }

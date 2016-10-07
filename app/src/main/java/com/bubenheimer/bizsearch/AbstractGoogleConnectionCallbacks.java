@@ -5,6 +5,7 @@
 package com.bubenheimer.bizsearch;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,8 +21,8 @@ abstract class AbstractGoogleConnectionCallbacks
 
     private final Context context;
 
-    AbstractGoogleConnectionCallbacks(final Context context) {
-        this.context = context;
+    AbstractGoogleConnectionCallbacks(final @NonNull Context context) {
+        this.context = context.getApplicationContext();
     }
 
     @UiThread
