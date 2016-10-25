@@ -198,8 +198,6 @@ public final class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
-        googleApiClient.connect();
     }
 
     @Override
@@ -208,8 +206,6 @@ public final class MainActivity extends AppCompatActivity
             FusedLocationApi.removeLocationUpdates(googleApiClient, this)
                     .setResultCallback(new StdResultCallback());
         }
-
-        googleApiClient.disconnect();
 
         super.onStop();
     }
