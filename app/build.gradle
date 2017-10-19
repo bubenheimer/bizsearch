@@ -11,13 +11,12 @@ keystoreProperties.load(keystorePropertiesFile.isFile() ?
         new InputStreamReader(new FileInputStream(KEYSTORE_PROPERTIES_FILE)) :
         new StringReader('storeFile=dummystore'))
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.3'
+    compileSdkVersion 25
 
     defaultConfig {
         applicationId 'com.bubenheimer.bizsearch'
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionName '1.0'
         versionCode 1
         resConfigs 'en', 'en-rUS'
@@ -48,8 +47,8 @@ android {
 }
 
 dependencies {
-    String playServicesVersion = '9.6.1'
-    String supportLibVersion = '24.2.1'
+    String playServicesVersion = '10.0.1'
+    String supportLibVersion = '25.1.1'
 
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
